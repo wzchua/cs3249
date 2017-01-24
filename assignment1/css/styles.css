@@ -1,0 +1,35 @@
+header {
+  width: 100%;
+  background-color: black; }
+
+nav {
+  width: 20%;
+  float: left; }
+
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0; }
+
+section {
+  width: 50%;
+  float: left; }
+
+aside {
+  width: 30%;
+  float: left; }
+
+footer {
+  width: 100%;
+  float: left; }
+
+body {
+  color: #010101; }
+
+#logo {
+  width: 10%;
+  margin: 0 auto;
+  padding: 0.5em;
+  display: block; }
+
+/*# sourceMappingURL=styles.css.map */
