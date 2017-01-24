@@ -25,20 +25,24 @@
 	</section>
 
 	<aside>
-		<h2>Trending Now</h2>
-		<figure>
-  			<img src="img/D750.png" alt="D750">
-  			<figcaption>Nikon D750</figcaption>
-		</figure>
-		<figure>
-  			<img src="img/D500.jpg" alt="D500">
-  			<figcaption>Nikon D500</figcaption>
-		</figure>
+	<h2>Trending Now</h2>
+	<figure>
+		<img src="img/D750.png" alt="D750">
+		<figcaption>Nikon D750</figcaption>
+	</figure>
+	<figure>
+		<img src="img/D500.jpg" alt="D500">
+		<figcaption>Nikon D500</figcaption>
+	</figure>
 	</aside>
 
-	<section id="map"></section>
+	<section id="map-section">
+	<div id="map-header">Where can you find us?</div>
+	<div id="map"></div>
+	</section>
+
 	<footer>Copyright © Nikon Imaging</footer>
-</body>
+	
 	<script>
  function myMap() {
     var mapOptions = {
@@ -48,4 +52,5 @@
     }
 	var map = new google.maps.Map(document.getElementById("map"), mapOptions);}</script>
  <script src="https://maps.googleapis.com/maps/api/js?callback=myMap"></script>
+</body>
 <html/>
