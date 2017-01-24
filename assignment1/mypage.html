@@ -2,6 +2,7 @@
 <html>
 
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta charset="UTF-8">
 <link rel="stylesheet" href="css/styles.css">
 <title>About Us</title>
@@ -23,10 +24,28 @@
 	<section>Text
 	</section>
 
-	<aside>Img
+	<aside>
+		<h2>Trending Now</h2>
+		<figure>
+  			<img src="img/D750.png" alt="D750">
+  			<figcaption>Nikon D750</figcaption>
+		</figure>
+		<figure>
+  			<img src="img/D500.jpg" alt="D500">
+  			<figcaption>Nikon D500</figcaption>
+		</figure>
 	</aside>
 
-	<footer>Map
-	</footer>
+	<section id="map"></section>
+	<footer>Copyright © Nikon Imaging</footer>
 </body>
+	<script>
+ function myMap() {
+    var mapOptions = {
+        center: new google.maps.LatLng(1.2745927,103.8431704),
+        zoom: 15,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    }
+	var map = new google.maps.Map(document.getElementById("map"), mapOptions);}</script>
+ <script src="https://maps.googleapis.com/maps/api/js?callback=myMap"></script>
 <html/>
