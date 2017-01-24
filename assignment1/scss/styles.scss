@@ -45,14 +45,26 @@ footer {
 
 #map-section {
 	width: 100%;
+	display: flex;
+	flex-direction: column;
 }
+
 #map {
 	width: 100%;
 	height: 15em;
+	order: 1;
+	@media (min-width: $view-small) {
+		order: 2;
+	}
 }
+
 #map-header {
 	width: 100%;
 	text-align: center;
+	order: 2;
+	@media (min-width: $view-small) {
+		order: 1;
+	}
 }
 
 body {
