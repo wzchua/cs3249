@@ -6,6 +6,12 @@ header {
 	background-color: black;
 }
 
+#logo-text {
+	text-align: center;
+	color: white;
+	padding: 0.3em 0;
+}
+
 nav {
 	width: 100%;
 
@@ -17,7 +23,17 @@ nav {
 nav ul {
     list-style-type: none;
     margin: 0;
-    padding: 0;
+    padding: 1em;
+}
+
+nav li {
+	text-align: center;
+	padding: 0.2em 0;
+
+	@media (min-width: $view-small) {
+		text-align: left;
+		padding: 0.3em 0;
+	}
 }
 
 section {
@@ -69,6 +85,7 @@ footer {
 
 body {
 	color: $primary-color;
+	margin: 0;
 }
 
 img {
@@ -79,13 +96,20 @@ h2 {
 	text-align:center;
 }
 
+figure {
+	margin: 0;
+}
+
 figcaption {
 	text-align: center;
 }
 
 #logo {
-	width: 10%;
+	width: 30%;
 	margin: 0 auto;
 	padding: 0.5em;
 	display: block;
+	@media (min-width: $view-small) {
+		width: 10%;
+	}
 }
