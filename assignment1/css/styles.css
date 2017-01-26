@@ -17,7 +17,10 @@ nav {
 nav ul {
   list-style-type: none;
   margin: 0;
-  padding: 1em; }
+  padding: 0; }
+  @media (min-width: 480px) {
+    nav ul {
+      padding: 1em; } }
 
 nav li {
   text-align: center;
@@ -27,12 +30,13 @@ nav li {
       text-align: left;
       padding: 0.3em 0; } }
 
-section {
-  width: 100%; }
+.center-data {
+  margin: 0.5em; }
   @media (min-width: 480px) {
-    section {
+    .center-data {
       width: 50%;
-      float: left; } }
+      float: left;
+      margin: 0; } }
 
 aside {
   width: 100%; }
@@ -43,7 +47,12 @@ aside {
 
 footer {
   width: 100%;
-  text-align: center; }
+  height: 2em;
+  display: flex;
+  justify-content: center;
+  /* align horizontal */
+  align-items: center;
+  /* align vertical */ }
 
 #map-section {
   width: 100%;
@@ -60,7 +69,12 @@ footer {
 
 #map-header {
   width: 100%;
-  text-align: center;
+  height: 2em;
+  display: flex;
+  justify-content: center;
+  /* align horizontal */
+  align-items: center;
+  /* align vertical */
   order: 2; }
   @media (min-width: 480px) {
     #map-header {
