@@ -39,6 +39,9 @@ nav li {
 		padding: 0.3em 2em;
 	}
 }
+nav a:not(.selected):hover {
+	color: white;
+}
 
 .center-data {
 
