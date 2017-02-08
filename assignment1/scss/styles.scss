@@ -1,5 +1,6 @@
 $primary-color: #010101;
 $view-small: 480px;
+$primary-font: Verdana;
 
 header {
 	width: 100%;
@@ -12,16 +13,16 @@ header {
 	padding: 0.3em 0;
 	font-weight: bold;
 	font-size: 2em;
-
 }
 
 nav {
 	width: 100%;
-	background-color: lightgray;
+	border-bottom: 1px solid black;
 
 	@media (min-width: $view-small) {
-		width: 20%;
-		float: left;
+		width: calc(20% - 1px);
+		border-right: 1px solid black;
+		border-bottom: 0px;
 	}
 }
 nav ul {
@@ -29,7 +30,7 @@ nav ul {
     margin: 0;
     padding: 0.3em 0;
 	@media (min-width: $view-small) {
-		padding: 1em 0;
+		padding: 5% 20%;
 	}
 }
 
@@ -39,13 +40,15 @@ nav li {
 
 	@media (min-width: $view-small) {
 		text-align: left;
-		padding: 0.3em 2em;
+		padding: 0.3em 0;
 	}
 }
 nav a:not(.selected):hover {
-	color: white;
+	color: lightgray;
 }
-
+nav a {
+	color: black;
+}
 .center-data {
 
 	width: 95%;
@@ -53,7 +56,6 @@ nav a:not(.selected):hover {
 
 	@media (min-width: $view-small) {
 		width: 47%;
-		float: left;
 		padding: 1em 1.5%;
 	}
 }
@@ -64,7 +66,6 @@ aside {
 
 	@media (min-width: $view-small) {
 		width: 30%;
-		float: left;
 		padding: 1em 0;
 	}
 }
@@ -89,7 +90,6 @@ footer {
 
 #map {
 	height: 15em;
-	margin: 0.5em;
 }
 
 #map-header {
@@ -107,6 +107,7 @@ body {
 	margin: 0;
 	display: flex;
 	flex-wrap: wrap;
+	font-family: $primary-font;
 }
 
 img {
