@@ -99,7 +99,7 @@ nav li {
 }
 
 .galleryElement {
-	width: calc((100% - 5%)/2);
+	width: 47.5%;
 	margin: 0 2.5% 2.5% 0;
 	height: 5em;
 	background-color: black;
@@ -109,7 +109,7 @@ nav li {
 }
 @media (min-width: 768px) {
 	.galleryElement {
-		width: calc((100% - 7.5%)/3);
+		width: 30.83333333333%;
 	}
 	.galleryElement:not(:nth-child(3n+1)) {
 	    margin: 0 2.5% 2.5% 0;
@@ -120,7 +120,7 @@ nav li {
 }
 @media (min-width: 1024px) {
 	.galleryElement {
-		width: calc((100% - 7.5%)/4);
+		width: 23.125%;
 	}
 	.galleryElement:not(:nth-child(4n+1)) {
 	    margin: 0 2.5% 2.5% 0;
