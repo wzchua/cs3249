@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+<!--
+  COLLABORATORS:
+  
+-->
+<html>
+
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Checkerboard</title>
+
+
+</head>
+
+<body>
+    <div>
+	   <canvas id="myBoard" width="400px" height="400px" style="display: block; border: 1px solid gray;"></canvas>
+    </div>
+    <div>
+       <canvas id="smiley" width="400px" height="400px" style="display: block; border: 1px solid gray;"></canvas>
+    </div>
+    <img id="icon" style="position: absolute;" src="images/icon.jpg">
+</body>
+
+<script type="text/javascript">
+    document.onmousemove = mouseMove;
+    document.onmouseup   = mouseUp;
+    var dragObject  = null;
+    var mouseOffset = null;
+
+    function mouseCoords(ev){
+        if(ev.pageX || ev.pageY){
+            return {x:ev.pageX, y:ev.pageY};
+        }
+        return {
+            x:ev.clientX + document.body.scrollLeft - document.body.clientLeft,
+            y:ev.clientY + document.body.scrollTop  - document.body.clientTop
+        };
+    }
+    function getMouseOffset(target, ev){
+        ev = ev || window.event;
+        var docPos    = getPosition(target);
+        var mousePos  = mouseCoords(ev);
+        return {x:mousePos.x - docPos.x, y:mousePos.y - docPos.y};
+    }
+
+    function getPosition(e){
+        var left = 0;
+        var top  = 0;
+        while (e.offsetParent){
+            left += e.offsetLeft;
+            top  += e.offsetTop;
+            e     = e.offsetParent;
+        }
+        left += e.offsetLeft;
+        top  += e.offsetTop;
+        return {x:left, y:top};
+    }
+
+    function mouseMove(ev){
+        ev           = ev || window.event;
+        var mousePos = mouseCoords(ev);
+        if(dragObject){
+            dragObject.style.position = 'absolute';
+            dragObject.style.top      = (mousePos.y - mouseOffset.y) + "px";
+            dragObject.style.left     = (mousePos.x - mouseOffset.x) + "px";
+            return false;
+        }
+    }
+
+    function mouseUp(){
+        dragObject = null;
+    }
+
+    function makeDraggable(item){
+        if(!item) return;
+        item.onmousedown = function(ev){
+            dragObject  = this;
+            mouseOffset = getMouseOffset(this, ev);
+            return false;
+        }
+    }
+
+    makeDraggable(document.getElementById("icon"));
+    var DEFAULT_BOARD_SIZE = 8;
+    
+    var sizePieceSqure = 50;
+    var boardSize = DEFAULT_BOARD_SIZE;
+
+    var color = [ "#FFFFFF", "#a9a9a9", "#0000FF", "#FFFF00"];
+
+    var c = document.getElementById("myBoard"); // ← Getting Canvas html object
+    var ctx = c.getContext("2d"); // ← Getting Painter
+    for(var i = 0; i < boardSize; i++)
+    {
+        for(var j = 0; j < boardSize; j++)
+        {
+            ctx.fillStyle = color[(i+j)%4];
+            ctx.fillRect(i*sizePieceSqure,j*sizePieceSqure,sizePieceSqure,sizePieceSqure);
+        }
+    }
+
+    var canvas = document.getElementById('smiley');
+    if (canvas.getContext) {
+        var ctx = canvas.getContext('2d');
+
+        ctx.beginPath();
+        ctx.arc(200, 200, 100, 0, Math.PI * 2, true); // Outer circle
+        ctx.fillStyle = "#FFFF00";
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(250, 200);
+        ctx.arc(200, 200, 50, 0, Math.PI, false);  // Mouth (clockwise)
+        ctx.fillStyle = "#000000";
+        ctx.moveTo(245, 170);
+        ctx.arc(235, 170, 10, 0, Math.PI * 2, true);  // Left eye
+        ctx.moveTo(175, 170);
+        ctx.arc(165, 170, 10, 0, Math.PI * 2, true);  // Right eye
+        ctx.fill();
+        //ctx.stroke();
+    }
+
+</script>
+
+</html>
