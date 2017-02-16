@@ -1,0 +1,35 @@
+﻿#navigation{
+	width:140px
+}
+
+#navigation table{
+	width:100%
+}
+
+#navigation input{
+	width:100%
+}
+
+#content{
+	position: relative;
+}
+
+#myBoard {
+	border: 1px solid gray;
+	z-index: 1;
+	position: absolute;
+	width: 400px;
+	height: 400px;
+}
+
+#overlay {
+	border: 1px solid gray;
+	z-index: 2;
+	position: absolute;
+	width: 400px;
+	height: 400px;
+}
+
+.pieces {
+    position: absolute;
+}
