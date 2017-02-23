@@ -85,7 +85,6 @@
                 dragDropController.removeAsDraggable(checker);
             });
        }
-       console.log('toggle');
 
        timer.resetTurnTime();
        var displayText = document.getElementById("displayText")
@@ -192,8 +191,8 @@
             var newPt = {x:to.x - direction.x * halfSize, y:to.y - direction.y * halfSize};
 
             //move halfSize length along its normal
-            ctx.lineTo(newPt.x - direction.x * halfSize, newPt.y + direction.y * halfSize);
-            ctx.lineTo(newPt.x + direction.x * halfSize, newPt.y - direction.y * halfSize);
+            ctx.lineTo(newPt.x - direction.y * halfSize, newPt.y + direction.x * halfSize);
+            ctx.lineTo(newPt.x + direction.y * halfSize, newPt.y - direction.x * halfSize);
             ctx.fillStyle = "yellow";
             ctx.fill();
             ctx.closePath();
@@ -364,7 +363,6 @@
                     board.promote(checker);
                 }
             }
-            console.log(data);
             if(undoStack.length == 0) {   
                 $("#btnUndo").prop("disabled",true);
             }
