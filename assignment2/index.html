@@ -52,6 +52,7 @@
     var blackCheckerList = [];
     var redCheckerList = [];
     var dragDropController = new DragDropController({height:400, width:400});
+    var timeOutTimer;
 
     var directionOf = function(color) {
       if (color == "black") {
@@ -82,8 +83,66 @@
                 dragDropController.removeAsDraggable(checker);
             });
        }
+
+       timer.resetTurnTime();
+       var displayText = document.getElementById("displayText")
+       displayText.className = (whoseTurn == "black") ?"displayBlack" : "displayRed";
+       displayText.innerHTML = (whoseTurn == "black") ? "BLACK'S TURN" : "RED'S TURN";
+       $('#time').css({'color': whoseTurn});
+    }    
+
+    var autoMove = function() {
+      var playerColor = whoseTurn;
+      var playerDirection = directionOf(playerColor);
+      var result = rules.makeRandomMove(playerColor, playerDirection);
     }
 
+    var timer = {
+        startTime: 0,
+        turnStartTime: 0,
+        isEnabled: false,
+        start: function() {
+            timer.isEnabled = true;
+            timer.startTime = Math.floor(Date.now()/1000);
+            timer.turnStartTime = timer.startTime;
+        },
+        stop: function() {
+            timer.isEnabled = false;
+        },
+        reset: function() {
+            timer.stop();            
+            $('#time').text("00:00:00");
+        },
+        resetTurnTime: function() {
+            var currTime = Math.floor(Date.now()/1000);
+            timer.turnStartTime = currTime;
+        },
+        tick: function() {
+            if(!timer.isEnabled) {
+                return;
+            }
+            var currTime = Math.floor(Date.now()/1000);
+            var timeDiff = currTime - timer.startTime;
+            if(currTime - timer.turnStartTime >= 10) {
+                autoMove();
+            }
+            var min = Math.floor(timeDiff / 60);
+            var sec = timeDiff - min* 60;
+            var hour = Math.floor(min/60);
+            min = min - hour * 60;
+            if (hour   < 10) {
+                hour   = "0"+hour;
+            }
+            if (min < 10) {
+                min = "0"+min;
+            }
+            if (sec < 10) {
+                sec = "0"+sec;
+            }
+            $('#time').text(hour+":"+min+":"+sec);
+
+        }
+    }
     var drawBoard = function(boardSize, arrow) {
         var sizePieceSqure = 400.0/boardSize;
         c = document.getElementById("myBoard"); // ← Getting Canvas html object
@@ -132,7 +191,13 @@
 
     }
 
-
+    var gameEnd = function() {                 
+       var displayText = document.getElementById("displayText")
+       displayText.className = "displayEnd";
+       displayText.innerHTML = "Game End";
+       $('#time').css({'color': 'blue'});   
+        timer.stop();     
+    }
     // This allows the Javascript code inside this block to only run when the page
     // has finished loading in the browser.
     $(document).ready(function() {        
@@ -207,6 +272,19 @@
         	// Your code here
             var img = e.details.checker.DOM;
             img.parentNode.removeChild(img);
+            if(e.details.checker.color == 'red') {
+                var index = redCheckerList.indexOf(e.details.checker);
+                redCheckerList.splice(index, 1);
+                if(redCheckerList.length == 0) {       
+                    gameEnd();                         
+                }
+            } else {
+                var index = blackCheckerList.indexOf(e.details.checker);
+                blackCheckerList.splice(index, 1);     
+                if(blackCheckerList.length == 0) {         
+                    gameEnd();                 
+                }          
+            }
         }, true);
 
         board.addEventListener('promote',function (e) {
@@ -222,28 +300,42 @@
 
     	},true);
 
-        
+        $("#btnNewGame").prop("disabled",true);
         $("#btnNewGame").click(function(evt) {
             drawBoard(boardSize);
-            blackCheckerDOMList = [];
-            redCheckerDOMList = [];
+            blackCheckerList = [];
+            redCheckerList = [];
             board.prepareNewGame();
             whoseTurn = "black";
-            blackCheckerList.forEach(function(checker) {
-                dragDropController.setAsDraggable(checker);
-            });
+            timer.reset();
+            var displayText = document.getElementById("displayText")
+            displayText.className = "displayBlack";
+            displayText.innerHTML = "BLACK'S TURN";
+            $('#time').css({'color': 'black'});
+            $("#btnStartGame").prop("disabled",false);
+            $("#btnAutoMove").prop("disabled",true);
+            $("#btnNewGame").prop("disabled",true);
         });
-
+        $("#btnAutoMove").prop("disabled",true);
         $("#btnAutoMove").click(function(evt) {
-          var playerColor = whoseTurn;
-          var playerDirection = directionOf(playerColor);
-          var result = rules.makeRandomMove(playerColor, playerDirection);
+            autoMove();
         });
 
         board.prepareNewGame();
-        blackCheckerList.forEach(function(checker) {
-            dragDropController.setAsDraggable(checker);
+        $('#btnStartGame').click(function(evt) {
+            blackCheckerList.forEach(function(checker) {
+                dragDropController.setAsDraggable(checker);
+            });
+
+            $("#btnAutoMove").prop("disabled",false);
+            $("#btnNewGame").prop("disabled",false);
+            $("#btnStartGame").prop("disabled",true);
+            timer.start();
         });
+        window.setInterval(timer.tick, 500);        
+        $("#btnUndo").prop("disabled",true);
+        $("#btnRedo").prop("disabled",true);
+
 
     });
 </script>
@@ -257,9 +349,13 @@
     <tr>
         <td id="navigation">
           <table>
-			  <tr><td>		<!-- Your code here -->			</td></tr>
-              <tr><td><input id="btnNewGame" type="button" name="new" value="New Game"/></td></tr>
+			  <tr><td><div id="time" class="timer">00:00:00</div></td></tr>
+              <tr><td><div id="displayText" class="displayBlack">       BLACK'S TURN        </div></td></tr>
+              <tr><td><input id="btnStartGame" type="button" name="new" value="Start Game"/></td></tr>
+              <tr><td><input id="btnNewGame" type="button" name="new" value="ResetGame"/></td></tr>
               <tr><td><input id="btnAutoMove" type="button" name="new" value="Auto Move"/></td></tr>
+              <tr><td><input id="btnUndo" type="button" name="new" value="Undo"/></td></tr>
+              <tr><td><input id="btnRedo" type="button" name="new" value="Redo"/></td></tr>
 
             </table>
         </td>

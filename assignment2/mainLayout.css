@@ -12,12 +12,12 @@
 
 #content{
 	position: relative;
+	padding: 0;
 }
 
 #myBoard {
 	border: 1px solid gray;
 	z-index: 1;
-	position: absolute;
 	width: 400px;
 	height: 400px;
 }
@@ -28,8 +28,28 @@
 	position: absolute;
 	width: 400px;
 	height: 400px;
+	top: 0;
+	left: 0;
 }
 
 .pieces {
     position: absolute;
+}
+.timer {	
+	text-align: center;
+}
+.displayBlack {
+	background-color: black;
+	color: white;
+	text-align: center;
+}
+.displayRed {
+	background-color: red;
+	color: white;
+	text-align: center;
+}
+.displayEnd {
+	background-color: blue;
+	color: white;
+	text-align: center;
 }
