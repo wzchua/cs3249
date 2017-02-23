@@ -92,9 +92,12 @@
     }    
 
     var autoMove = function() {
-      var playerColor = whoseTurn;
-      var playerDirection = directionOf(playerColor);
-      var result = rules.makeRandomMove(playerColor, playerDirection);
+        var playerColor = whoseTurn;
+        var playerDirection = directionOf(playerColor);
+        var result = rules.makeRandomMove(playerColor, playerDirection);
+        if(result == null) {
+            toggleTurn(whoseTurn);
+        }
     }
 
     var timer = {
