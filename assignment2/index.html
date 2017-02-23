@@ -51,6 +51,8 @@
     var whoseTurn = "black";	
     var blackCheckerList = [];
     var redCheckerList = [];
+    var redoStack = [];
+    var undoStack = [];
     var dragDropController = new DragDropController({height:400, width:400});
     var timeOutTimer;
 
@@ -83,6 +85,7 @@
                 dragDropController.removeAsDraggable(checker);
             });
        }
+       console.log('toggle');
 
        timer.resetTurnTime();
        var displayText = document.getElementById("displayText")
@@ -97,6 +100,11 @@
         var result = rules.makeRandomMove(playerColor, playerDirection);
         if(result == null) {
             toggleTurn(whoseTurn);
+        } else {
+            undoStack.push(result);  
+            redoStack = [];
+            $("#btnUndo").prop("disabled",false);     
+            $("#btnRedo").prop("disabled",true);     
         }
     }
 
@@ -233,6 +241,11 @@
                 directionOf(whoseTurn), row, col);
             if(!result) {
                 dragDropController.dragReset();
+            } else {
+                undoStack.push(result);
+                $("#btnUndo").prop("disabled",false); 
+                redoStack = [];  
+                $("#btnRedo").prop("disabled",true);   
             }
         });
 
@@ -268,7 +281,6 @@
                 to: {row: e.details.toRow, col: e.details.toCol}
             });            
             toggleTurn(whoseTurn);
-
     	},true);
 
         board.addEventListener('remove', function(e) {
@@ -308,6 +320,8 @@
             drawBoard(boardSize);
             blackCheckerList = [];
             redCheckerList = [];
+            undoStack = [];  
+            redoStack = [];  
             board.prepareNewGame();
             whoseTurn = "black";
             timer.reset();
@@ -318,6 +332,8 @@
             $("#btnStartGame").prop("disabled",false);
             $("#btnAutoMove").prop("disabled",true);
             $("#btnNewGame").prop("disabled",true);
+            $("#btnUndo").prop("disabled",true);
+            $("#btnRedo").prop("disabled",true);
         });
         $("#btnAutoMove").prop("disabled",true);
         $("#btnAutoMove").click(function(evt) {
@@ -337,7 +353,35 @@
         });
         window.setInterval(timer.tick, 500);        
         $("#btnUndo").prop("disabled",true);
+        $('#btnUndo').click(function(evt) {
+            var data = undoStack.pop();
+            board.moveTo(board.getCheckerAt(data.to_row, data.to_col), data.from_row, data.from_col);
+            for(var i = 0; i < data.remove.length; i++) {
+                var piece = data.remove[i];
+                var checker = new Checker(piece.color, piece.isKing);
+                board.add(checker, piece.row, piece.col);
+                if(piece.isKing) {
+                    board.promote(checker);
+                }
+            }
+            console.log(data);
+            if(undoStack.length == 0) {   
+                $("#btnUndo").prop("disabled",true);
+            }
+            redoStack.push(data);
+            $("#btnRedo").prop("disabled",false);  
+        });
         $("#btnRedo").prop("disabled",true);
+        $('#btnRedo').click(function(evt) {
+            var data = redoStack.pop();
+            rules.makeMove(board.getCheckerAt(data.from_row, data.from_col), directionOf(whoseTurn),
+                directionOf(whoseTurn), data.to_row, data.to_col);
+            if(redoStack.length == 0) {   
+                $("#btnRedo").prop("disabled",true);
+            }
+            undoStack.push(data);
+                $("#btnUndo").prop("disabled",false);
+        });
 
 
     });
