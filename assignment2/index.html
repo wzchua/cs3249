@@ -19,6 +19,7 @@
 <script type="text/javascript" src="boardEvent.js"></script>
 <script type="text/javascript" src="board.js"></script>
 <script type="text/javascript" src="rules.js"></script>
+<script type="text/javascript" src="dragDropController.js"></script>
 
 <script type="text/javascript">
 
@@ -48,6 +49,9 @@
     var board;
     var rules;
     var whoseTurn = "black";	
+    var blackCheckerList = [];
+    var redCheckerList = [];
+    var dragDropController = new DragDropController({height:400, width:400});
 
     var directionOf = function(color) {
       if (color == "black") {
@@ -62,24 +66,25 @@
 	   // Your code here
        if(color == "black") {
             whoseTurn = "red";
+            redCheckerList.forEach(function(checker) {
+                dragDropController.setAsDraggable(checker);
+            });        
+            blackCheckerList.forEach(function(checker) {
+                dragDropController.removeAsDraggable(checker);
+            });    
+
        } else {
-            whoseTurn = "black";
+            whoseTurn = "black";            
+            blackCheckerList.forEach(function(checker) {
+                dragDropController.setAsDraggable(checker);
+            });    
+            redCheckerList.forEach(function(checker) {
+                dragDropController.removeAsDraggable(checker);
+            });
        }
     }
 
-
-
-    // This allows the Javascript code inside this block to only run when the page
-    // has finished loading in the browser.
-    $(document).ready(function() {
-        var boardSize = DEFAULT_BOARD_SIZE;
-        if ($.getUrlVar('size') && $.getUrlVar('size') >= 6) {
-            board = new Board($.getUrlVar('size'));
-            boardSize = $.getUrlVar('size');
-        } else {
-            board = new Board(DEFAULT_BOARD_SIZE);
-        }
-
+    var drawBoard = function(boardSize, arrow) {
         var sizePieceSqure = 400.0/boardSize;
         c = document.getElementById("myBoard"); // ← Getting Canvas html object
         ctx = c.getContext("2d"); // ← Getting Painter
@@ -94,31 +99,95 @@
                 ctx.fillRect(i*sizePieceSqure,j*sizePieceSqure,sizePieceSqure,sizePieceSqure);
             }
         }
+        if(arrow != undefined) {
+            var halfSize = sizePieceSqure/2;
+            var from = {x: arrow.from.col * sizePieceSqure + halfSize, 
+                y: arrow.from.row * sizePieceSqure + halfSize};
+            var to = {x: arrow.to.col * sizePieceSqure + halfSize, 
+                y: arrow.to.row * sizePieceSqure + halfSize };
+            ctx.strokeStyle = "yellow";
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
 
-        var content = document.getElementById("overlay"); 
+            ctx.beginPath();
+            ctx.moveTo(to.x, to.y);
+            var direction = {x: to.x - from.x, y: to.y - from.y};
+            var norm = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+            direction.x = direction.x/norm;
+            direction.y = direction.y/norm;
+
+            //trace back halfSize length
+            var newPt = {x:to.x - direction.x * halfSize, y:to.y - direction.y * halfSize};
+
+            //move halfSize length along its normal
+            ctx.lineTo(newPt.x - direction.x * halfSize, newPt.y + direction.y * halfSize);
+            ctx.lineTo(newPt.x + direction.x * halfSize, newPt.y - direction.y * halfSize);
+            ctx.fillStyle = "yellow";
+            ctx.fill();
+            ctx.closePath();
+
+        }
+
+    }
+
+
+    // This allows the Javascript code inside this block to only run when the page
+    // has finished loading in the browser.
+    $(document).ready(function() {        
+        var boardSize = DEFAULT_BOARD_SIZE;
+        if ($.getUrlVar('size') && $.getUrlVar('size') >= 6) {
+            board = new Board($.getUrlVar('size'));
+            boardSize = $.getUrlVar('size');
+        } else {
+            board = new Board(DEFAULT_BOARD_SIZE);
+        }
+
+        var sizePieceSqure = 400.0/boardSize;
+        drawBoard(boardSize);
+
+        var overlay = document.getElementById("overlay"); 
 
 	    rules = new Rules(board);
 
-
      	// Your code here
+        dragDropController.addEventListener('outofbounds', function(ev) {
+            dragDropController.dragReset();
+        });
+        dragDropController.addEventListener('dragrelease', function(ev) {
+            var halfSize = sizePieceSqure/2;
+            var checker = ev.details.checker;
+            var row = Math.floor((ev.details.newTop + halfSize) / sizePieceSqure);
+            var col = Math.floor((ev.details.newLeft + halfSize) / sizePieceSqure);
+            //(checker, turnDirection, playerDirection, toRow, toCol)
+            var result = rules.makeMove(checker, directionOf(whoseTurn),
+                directionOf(whoseTurn), row, col);
+            if(!result) {
+                dragDropController.dragReset();
+            }
+        });
 
         board.addEventListener('add',function (e) {
             var img = new Image();
             var color = e.details.checker.color;
+            var checker = e.details.checker;
+            checker.DOM = img;
             var col = e.details.col;
             var row = e.details.row;
             if(color == 'black') {
-                img.src = 'graphics/black-piece.png';
+                img.src = 'graphics/black-piece.png';     
+                blackCheckerList.push(checker);
             } else if (color == 'red') {
                 img.src = 'graphics/red-piece.png';
+                redCheckerList.push(checker);
             }
             img.width = sizePieceSqure;
             img.height = sizePieceSqure;
             img.className = 'drag pieces';
             img.style.top = row * sizePieceSqure + 'px';
             img.style.left = col * sizePieceSqure + 'px';
-            e.details.checker.DOM = img;
-            content.appendChild(img);
+            overlay.appendChild(img);
     	},true);
 
     	board.addEventListener('move',function (e) {
@@ -126,6 +195,11 @@
             var img = e.details.checker.DOM;
             img.style.top = e.details.toRow * sizePieceSqure + 'px';
             img.style.left = e.details.toCol * sizePieceSqure + 'px';
+            drawBoard(boardSize, {
+                from: {row: e.details.fromRow, col: e.details.fromCol},
+                to: {row: e.details.toRow, col: e.details.toCol}
+            });            
+            toggleTurn(whoseTurn);
 
     	},true);
 
@@ -150,19 +224,25 @@
 
         
         $("#btnNewGame").click(function(evt) {
+            drawBoard(boardSize);
+            blackCheckerDOMList = [];
+            redCheckerDOMList = [];
             board.prepareNewGame();
+            blackCheckerList.forEach(function(checker) {
+                dragDropController.setAsDraggable(checker);
+            });
         });
 
         $("#btnAutoMove").click(function(evt) {
           var playerColor = whoseTurn;
           var playerDirection = directionOf(playerColor);
           var result = rules.makeRandomMove(playerColor, playerDirection);
-          if (result != null) {
-            toggleTurn(playerColor);
-          }
         });
 
         board.prepareNewGame();
+        blackCheckerList.forEach(function(checker) {
+            dragDropController.setAsDraggable(checker);
+        });
 
     });
 </script>
