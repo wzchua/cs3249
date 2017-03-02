@@ -231,10 +231,20 @@
             dragDropController.dragReset();
         });
         dragDropController.addEventListener('dragrelease', function(ev) {
+            //handle if auto move moves the piece being dragged
+            if(ev.details.mouseY > 400.0 || ev.details.mouseY < 0 ||
+                    ev.details.mouseX > 400.0 || ev.details.mouseX < 0) {   
+                dragDropController.dragReset();
+                return;
+            } 
+
             var halfSize = sizePieceSqure/2;
             var checker = ev.details.checker;
             var row = Math.floor((ev.details.newTop + halfSize) / sizePieceSqure);
             var col = Math.floor((ev.details.newLeft + halfSize) / sizePieceSqure);
+            if(!board.isEmptyLocation(row, col)){
+                return;
+            }
             //(checker, turnDirection, playerDirection, toRow, toCol)
             var result = rules.makeMove(checker, directionOf(whoseTurn),
                 directionOf(whoseTurn), row, col);

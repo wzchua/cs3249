@@ -76,16 +76,10 @@ var DragDropController =  function (bounds) {
         var parentOffset = self.getGlobalOffset(self.dragObject.DOM.offsetParent);
         var parentMousePosX = mousePos.x - parentOffset.x;
         var parentMousePosY = mousePos.y - parentOffset.y; 
-        var details = { newTop: newTop, newLeft: newLeft };
+        var details = { newTop: newTop, newLeft: newLeft, mouseX: parentMousePosX, mouseY: parentMousePosY };  
 
-        if(parentMousePosY > self.height || parentMousePosY < 0 ||
-            parentMousePosX > self.width || parentMousePosX < 0) {      
-            self.dragReset();//reset if released out of bounds
-        } else {
-            details.checker = self.dragObject;
-            //dispatch only for release within bounds
-            self.dispatchEvent("dragrelease", details);            
-        }
+        details.checker = self.dragObject;
+        self.dispatchEvent("dragrelease", details);
 
         self.dragObject = null;
         document.removeEventListener("mousemove", self.dragMove);
