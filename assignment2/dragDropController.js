@@ -80,11 +80,18 @@ var DragDropController =  function (bounds) {
 
         details.checker = self.dragObject;
         self.dispatchEvent("dragrelease", details);
-
+        
         self.dragObject = null;
         document.removeEventListener("mousemove", self.dragMove);
         document.removeEventListener("mouseup", self.dragRelease);
     };
+    this.dragDisable = function() {
+        self.dragReset();
+        self.dragObject = null;
+        document.removeEventListener("mousemove", self.dragMove);
+        document.removeEventListener("mouseup", self.dragRelease);
+
+    }
     this.dragReset = function() {
             self.dragObject.DOM.style.top = self.initialTop;
             self.dragObject.DOM.style.left = self.initialLeft;        

@@ -94,6 +94,7 @@
     }    
 
     var autoMove = function() {
+        dragDropController.dragDisable();
         var playerColor = whoseTurn;
         var playerDirection = directionOf(playerColor);
         var result = rules.makeRandomMove(playerColor, playerDirection);
