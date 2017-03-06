@@ -20,6 +20,7 @@
 <script type="text/javascript" src="board.js"></script>
 <script type="text/javascript" src="rules.js"></script>
 <script type="text/javascript" src="dragDropController.js"></script>
+<script type="text/javascript" src="game.js"></script>
 
 <script type="text/javascript">
 
@@ -42,118 +43,7 @@
             return $.getUrlVars()[name];
         }
     });
-
-    var DEFAULT_BOARD_SIZE = 8;
-
-    //data model
-    var board;
-    var rules;
-    var whoseTurn = "black";	
-    var blackCheckerList = [];
-    var redCheckerList = [];
-    var redoStack = [];
-    var undoStack = [];
-    var dragDropController = new DragDropController({height:400, width:400});
-    var timeOutTimer;
-
-    var directionOf = function(color) {
-      if (color == "black") {
-        return -1;
-      }
-      return 1;
-    }
-
-    // Fill in this function to toggle the display for whose turn
-    // The color parameter should be either "black" or "red"
-    var toggleTurn = function(color) {
-	   // Your code here
-       if(color == "black") {
-            whoseTurn = "red";
-            redCheckerList.forEach(function(checker) {
-                dragDropController.setAsDraggable(checker);
-            });        
-            blackCheckerList.forEach(function(checker) {
-                dragDropController.removeAsDraggable(checker);
-            });    
-
-       } else {
-            whoseTurn = "black";            
-            blackCheckerList.forEach(function(checker) {
-                dragDropController.setAsDraggable(checker);
-            });    
-            redCheckerList.forEach(function(checker) {
-                dragDropController.removeAsDraggable(checker);
-            });
-       }
-
-       timer.resetTurnTime();
-       var displayText = document.getElementById("displayText")
-       displayText.className = (whoseTurn == "black") ?"displayBlack" : "displayRed";
-       displayText.innerHTML = (whoseTurn == "black") ? "BLACK'S TURN" : "RED'S TURN";
-       $('#time').css({'color': whoseTurn});
-    }    
-
-    var autoMove = function() {
-        dragDropController.dragDisable();
-        var playerColor = whoseTurn;
-        var playerDirection = directionOf(playerColor);
-        var result = rules.makeRandomMove(playerColor, playerDirection);
-        if(result == null) {
-            toggleTurn(whoseTurn);
-        } else {
-            undoStack.push(result);  
-            redoStack = [];
-            $("#btnUndo").prop("disabled",false);     
-            $("#btnRedo").prop("disabled",true);     
-        }
-    }
-
-    var timer = {
-        startTime: 0,
-        turnStartTime: 0,
-        isEnabled: false,
-        start: function() {
-            timer.isEnabled = true;
-            timer.startTime = Math.floor(Date.now()/1000);
-            timer.turnStartTime = timer.startTime;
-        },
-        stop: function() {
-            timer.isEnabled = false;
-        },
-        reset: function() {
-            timer.stop();            
-            $('#time').text("00:00:00");
-        },
-        resetTurnTime: function() {
-            var currTime = Math.floor(Date.now()/1000);
-            timer.turnStartTime = currTime;
-        },
-        tick: function() {
-            if(!timer.isEnabled) {
-                return;
-            }
-            var currTime = Math.floor(Date.now()/1000);
-            var timeDiff = currTime - timer.startTime;
-            if(currTime - timer.turnStartTime >= 10) {
-                autoMove();
-            }
-            var min = Math.floor(timeDiff / 60);
-            var sec = timeDiff - min* 60;
-            var hour = Math.floor(min/60);
-            min = min - hour * 60;
-            if (hour   < 10) {
-                hour   = "0"+hour;
-            }
-            if (min < 10) {
-                min = "0"+min;
-            }
-            if (sec < 10) {
-                sec = "0"+sec;
-            }
-            $('#time').text(hour+":"+min+":"+sec);
-
-        }
-    }
+ 
     var drawBoard = function(boardSize, arrow) {
         var sizePieceSqure = 400.0/boardSize;
         c = document.getElementById("myBoard"); // ← Getting Canvas html object
@@ -199,40 +89,31 @@
             ctx.closePath();
 
         }
-
     }
 
-    var gameEnd = function() {                 
-       var displayText = document.getElementById("displayText")
-       displayText.className = "displayEnd";
-       displayText.innerHTML = "Game End";
-       $('#time').css({'color': 'blue'});   
-        timer.stop();     
-    }
+    var DEFAULT_BOARD_SIZE = 8;
+
+    //data model
+    var game;
+    var dragDropController = new DragDropController({height:400, width:400});
     // This allows the Javascript code inside this block to only run when the page
     // has finished loading in the browser.
     $(document).ready(function() {        
         var boardSize = DEFAULT_BOARD_SIZE;
         if ($.getUrlVar('size') && $.getUrlVar('size') >= 6) {
-            board = new Board($.getUrlVar('size'));
             boardSize = $.getUrlVar('size');
-        } else {
-            board = new Board(DEFAULT_BOARD_SIZE);
         }
-
         var sizePieceSqure = 400.0/boardSize;
+        game = new Game(boardSize);
         drawBoard(boardSize);
 
-        var overlay = document.getElementById("overlay"); 
-
-	    rules = new Rules(board);
+        var overlay = document.getElementById("overlay");
 
      	// Your code here
         dragDropController.addEventListener('outofbounds', function(ev) {
             dragDropController.dragReset();
         });
         dragDropController.addEventListener('dragrelease', function(ev) {
-            //handle if auto move moves the piece being dragged
             if(ev.details.mouseY > 400.0 || ev.details.mouseY < 0 ||
                     ev.details.mouseX > 400.0 || ev.details.mouseX < 0) {   
                 dragDropController.dragReset();
@@ -243,23 +124,17 @@
             var checker = ev.details.checker;
             var row = Math.floor((ev.details.newTop + halfSize) / sizePieceSqure);
             var col = Math.floor((ev.details.newLeft + halfSize) / sizePieceSqure);
-            if(!board.isEmptyLocation(row, col)){
+            if(!game.board.isEmptyLocation(row, col)){
+                dragDropController.dragReset();
                 return;
             }
-            //(checker, turnDirection, playerDirection, toRow, toCol)
-            var result = rules.makeMove(checker, directionOf(whoseTurn),
-                directionOf(whoseTurn), row, col);
-            if(!result) {
+            if(!game.makeMove({row: checker.row, col: checker.col},
+                    {row: row, col: col})) {
                 dragDropController.dragReset();
-            } else {
-                undoStack.push(result);
-                $("#btnUndo").prop("disabled",false); 
-                redoStack = [];  
-                $("#btnRedo").prop("disabled",true);   
             }
         });
 
-        board.addEventListener('add',function (e) {
+        game.addEventListener('add',function (e) {
             var img = new Image();
             var color = e.details.checker.color;
             var checker = e.details.checker;
@@ -267,11 +142,9 @@
             var col = e.details.col;
             var row = e.details.row;
             if(color == 'black') {
-                img.src = 'graphics/black-piece.png';     
-                blackCheckerList.push(checker);
+                img.src = 'graphics/black-piece.png';   
             } else if (color == 'red') {
                 img.src = 'graphics/red-piece.png';
-                redCheckerList.push(checker);
             }
             img.width = sizePieceSqure;
             img.height = sizePieceSqure;
@@ -280,120 +153,146 @@
             img.style.left = col * sizePieceSqure + 'px';
             img.draggable=false;
             overlay.appendChild(img);
-    	},true);
+    	});
 
-    	board.addEventListener('move',function (e) {
-    		// Your code here
+    	game.addEventListener('move',function (e) {
+            dragDropController.dragDisable();//disable drag before shifting
             var img = e.details.checker.DOM;
             img.style.top = e.details.toRow * sizePieceSqure + 'px';
             img.style.left = e.details.toCol * sizePieceSqure + 'px';
             drawBoard(boardSize, {
                 from: {row: e.details.fromRow, col: e.details.fromCol},
                 to: {row: e.details.toRow, col: e.details.toCol}
-            });            
-            toggleTurn(whoseTurn);
-    	},true);
+            });             
+    	});
 
-        board.addEventListener('remove', function(e) {
-        	// Your code here
+        game.addEventListener('remove', function(e) {
             var img = e.details.checker.DOM;
             img.parentNode.removeChild(img);
-            if(e.details.checker.color == 'red') {
-                var index = redCheckerList.indexOf(e.details.checker);
-                redCheckerList.splice(index, 1);
-                if(redCheckerList.length == 0) {       
-                    gameEnd();                         
-                }
-            } else {
-                var index = blackCheckerList.indexOf(e.details.checker);
-                blackCheckerList.splice(index, 1);     
-                if(blackCheckerList.length == 0) {         
-                    gameEnd();                 
-                }          
-            }
-        }, true);
+        });
 
-        board.addEventListener('promote',function (e) {
-    		// Your code here
+        game.addEventListener('promote',function (e) {
             var img = e.details.checker.DOM;
-
             var color = e.details.checker.color;
             if(color == 'black') {
                 img.src = 'graphics/black-king.png';
             } else if (color == 'red') {
                 img.src = 'graphics/red-king.png';
             }
+    	});
 
-    	},true);
+        game.addEventListener('demote',function (e) {
+            var img = e.details.checker.DOM;
+            var color = e.details.checker.color;
+            if(color == 'black') {
+                img.src = 'graphics/black-piece.png';
+            } else if (color == 'red') {
+                img.src = 'graphics/red-piece.png';
+            }
+        });
 
-        $("#btnNewGame").prop("disabled",true);
-        $("#btnNewGame").click(function(evt) {
+        game.addEventListener('tick', function(e) {
+            var hour = e.details.h;
+            var min = e.details.m;
+            var sec = e.details.s;
+
+            if (hour   < 10) {
+                hour   = "0"+hour;
+            }
+            if (min < 10) {
+                min = "0"+min;
+            }
+            if (sec < 10) {
+                sec = "0"+sec;
+            }
+            $('#time').text(hour+":"+min+":"+sec);
+        });
+
+        game.addEventListener('turn_end',function (e) {
+            var displayText = document.getElementById("displayText");
+            if(e.details.whoseTurn == 'red') {
+                game.blackCheckerList.forEach(function(checker) {
+                    dragDropController.setAsDraggable(checker);
+                });    
+                game.redCheckerList.forEach(function(checker) {
+                    dragDropController.removeAsDraggable(checker);
+                });
+                displayText.className = "displayBlack";
+                displayText.innerHTML = "BLACK'S TURN";
+                $('#time').css({'color': 'black'});
+            } else {
+                game.redCheckerList.forEach(function(checker) {
+                    dragDropController.setAsDraggable(checker);
+                });        
+                game.blackCheckerList.forEach(function(checker) {
+                    dragDropController.removeAsDraggable(checker);
+                });    
+                displayText.className = "displayRed";
+                displayText.innerHTML = "RED'S TURN";
+                $('#time').css({'color': 'red'});
+            }
+            $("#btnUndo").prop("disabled",game.undoStack.length == 0);
+            $("#btnRedo").prop("disabled",game.redoStack.length == 0);
+        });
+        game.addEventListener('game_end', function(e) {
+            game.blackCheckerList.forEach(function(checker) {
+                dragDropController.removeAsDraggable(checker);
+            });    
+            game.redCheckerList.forEach(function(checker) {
+                dragDropController.removeAsDraggable(checker);
+            });
+            var displayText = document.getElementById("displayText")
+            displayText.className = "displayEnd";
+            displayText.innerHTML = "Game End";
+            $("#btnAutoMove").prop("disabled",true);
+            $("#btnUndo").prop("disabled",true);
+            $('#time').css({'color': 'blue'});  
+        });
+
+        $('#btnStartGame').click(function(evt) {
+            game.blackCheckerList.forEach(function(checker) {
+                dragDropController.setAsDraggable(checker);
+            });
+            game.redCheckerList.forEach(function(checker) {
+                dragDropController.removeAsDraggable(checker);
+            });
+
+            $("#btnStartGame").prop("disabled",true);
+            $("#btnResetGame").prop("disabled",false);
+            $("#btnAutoMove").prop("disabled",false);
+            game.startGame();
+        });      
+        $("#btnResetGame").click(function(evt) {
             drawBoard(boardSize);
-            blackCheckerList = [];
-            redCheckerList = [];
-            undoStack = [];  
-            redoStack = [];  
-            board.prepareNewGame();
-            whoseTurn = "black";
-            timer.reset();
+            game.resetGame();
+
             var displayText = document.getElementById("displayText")
             displayText.className = "displayBlack";
             displayText.innerHTML = "BLACK'S TURN";
             $('#time').css({'color': 'black'});
+            $('#time').text("00:00:00");
+
             $("#btnStartGame").prop("disabled",false);
+            $("#btnResetGame").prop("disabled",true);
             $("#btnAutoMove").prop("disabled",true);
-            $("#btnNewGame").prop("disabled",true);
             $("#btnUndo").prop("disabled",true);
             $("#btnRedo").prop("disabled",true);
         });
-        $("#btnAutoMove").prop("disabled",true);
         $("#btnAutoMove").click(function(evt) {
-            autoMove();
+            game.autoMove();
         });
-
-        board.prepareNewGame();
-        $('#btnStartGame').click(function(evt) {
-            blackCheckerList.forEach(function(checker) {
-                dragDropController.setAsDraggable(checker);
-            });
-
-            $("#btnAutoMove").prop("disabled",false);
-            $("#btnNewGame").prop("disabled",false);
-            $("#btnStartGame").prop("disabled",true);
-            timer.start();
-        });
-        window.setInterval(timer.tick, 500);        
-        $("#btnUndo").prop("disabled",true);
         $('#btnUndo').click(function(evt) {
-            var data = undoStack.pop();
-            board.moveTo(board.getCheckerAt(data.to_row, data.to_col), data.from_row, data.from_col);
-            for(var i = 0; i < data.remove.length; i++) {
-                var piece = data.remove[i];
-                var checker = new Checker(piece.color, piece.isKing);
-                board.add(checker, piece.row, piece.col);
-                if(piece.isKing) {
-                    board.promote(checker);
-                }
-            }
-            if(undoStack.length == 0) {   
-                $("#btnUndo").prop("disabled",true);
-            }
-            redoStack.push(data);
-            $("#btnRedo").prop("disabled",false);  
+            game.undo(); 
         });
-        $("#btnRedo").prop("disabled",true);
         $('#btnRedo').click(function(evt) {
-            var data = redoStack.pop();
-            rules.makeMove(board.getCheckerAt(data.from_row, data.from_col), directionOf(whoseTurn),
-                directionOf(whoseTurn), data.to_row, data.to_col);
-            if(redoStack.length == 0) {   
-                $("#btnRedo").prop("disabled",true);
-            }
-            undoStack.push(data);
-                $("#btnUndo").prop("disabled",false);
+            game.redo();
         });
 
-
+        game.resetGame();
+        $("#btnResetGame").prop("disabled",true);
+        $("#btnAutoMove").prop("disabled",true);
+        $("#btnUndo").prop("disabled",true);
+        $("#btnRedo").prop("disabled",true);
     });
 </script>
 
@@ -409,7 +308,7 @@
 			  <tr><td><div id="time" class="timer">00:00:00</div></td></tr>
               <tr><td><div id="displayText" class="displayBlack">       BLACK'S TURN        </div></td></tr>
               <tr><td><input id="btnStartGame" type="button" name="new" value="Start Game"/></td></tr>
-              <tr><td><input id="btnNewGame" type="button" name="new" value="ResetGame"/></td></tr>
+              <tr><td><input id="btnResetGame" type="button" name="new" value="ResetGame"/></td></tr>
               <tr><td><input id="btnAutoMove" type="button" name="new" value="Auto Move"/></td></tr>
               <tr><td><input id="btnUndo" type="button" name="new" value="Undo"/></td></tr>
               <tr><td><input id="btnRedo" type="button" name="new" value="Redo"/></td></tr>

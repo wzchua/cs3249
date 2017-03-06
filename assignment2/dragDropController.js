@@ -56,10 +56,6 @@ var DragDropController =  function (bounds) {
                     parentMousePosX > self.width || parentMousePosX < 0) {    
                     var details = {mouseX: parentMousePosX, mouseY: parentMousePosY};                
                     self.dispatchEvent("outofbounds", details);
-                } else if(newLeft >= 0 && newLeft + self.dragObject.DOM.width < self.width) {
-                    self.dragObject.DOM.style.left = newLeft + "px";  
-                } else if(newTop >= 0 && newTop + self.dragObject.DOM.height < self.height) {
-                    self.dragObject.DOM.style.top = newTop + "px";
                 }
 
             } else {
@@ -86,6 +82,9 @@ var DragDropController =  function (bounds) {
         document.removeEventListener("mouseup", self.dragRelease);
     };
     this.dragDisable = function() {
+        if(self.dragObject == null) {
+            return;
+        }
         self.dragReset();
         self.dragObject = null;
         document.removeEventListener("mousemove", self.dragMove);
