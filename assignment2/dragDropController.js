@@ -1,3 +1,11 @@
+/**
+ * DragDropController wraps the mouse events with respect to a user-defined bounds.
+ * It works with objects that have a DOM element as the 'DOM' attribute.
+ * Dragging outside of the bound will dispatch an outofbounds event.
+ * Releasing a drag object will dispatch a dragrelease event
+ * dragDisable can be called to release any object being dragged.
+ * @param {Object{width{Integer}, height{Integer}}} bounds Represents the pixel bounds.
+ */
 var DragDropController =  function (bounds) {
     var self = this;
     this.initialLeft;

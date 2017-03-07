@@ -1,3 +1,7 @@
+/**
+ * Timer is a simple class that wraps the setInterval function. The timer ticks every 0.5s and
+ * provides functions to track time progression. 
+ */
 var Timer = function() {
     this.startTime = 0;
     this.secondaryStartTime = 0,
@@ -39,7 +43,28 @@ Timer.prototype.tick = function(){
     this.tickAction({h: hour, m: min, s: sec, 
         secondaryTimeCount: currTime - this.secondaryStartTime});
 }
-
+/**
+ * Game wraps around rules and board to handle game logic and dispatch UI dependent events.
+ * 
+ * APIs:
+ * makeMove(from: {row, col}, to: {row, col})
+ * startGame()
+ * resetGame()
+ * autoMove()
+ * undo()
+ * redo()
+ * 
+ * Events dispatch:
+ * add
+ * move
+ * remove
+ * promote
+ * demote
+ * tick
+ * turn_end
+ * game_end
+ * @param {Integer} size Represents the length/width of the board.
+ */
 var Game = function(size){
     var self = this;
     this.size = size;
