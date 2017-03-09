@@ -119,13 +119,14 @@ class TodoApp extends React.Component{
 
 	//update a state when an item is checked or unchecked
 	check(key, isDone) {
-		//recreate the list with a filter that only updates the isDone attribute of the selected key
-		const newState =  this.state.data.filter((todo)=>{
+		//recreate the list that only updates the isDone attribute of the selected key
+		const newState =  this.state.data.map((todo)=>{
 			if(todo.key === key) {
-				todo.isDone = isDone;
+				return Object.assign({}, todo, {isDone: isDone});
 			}
 			return todo;
-		})
+		});
+		
 		todos = newState; //update DB
 		this.setState({data: todos}); //update state
 	}
@@ -140,11 +141,13 @@ class TodoApp extends React.Component{
 		//0: All, 1: Completed, 2: Uncompleted
 		const view = stateData.filter((todo)=>{
 			if(this.state.filterType == 0) {
-				return todo;
+				return true;
 			} else if(this.state.filterType == 1 && todo.isDone) {
-				return todo;
+				return true;
 			} else if(this.state.filterType == 2 && !todo.isDone) {
-				return todo;
+				return true;
+			} else {
+				return false;
 			}
 		});
 		//return a filtered list
